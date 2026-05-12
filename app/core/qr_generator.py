@@ -1,9 +1,7 @@
 import qrcode
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from app.config.constants import (
-    COLOR_BLACK,
-    COLOR_WHITE,
     DEFAULT_BOX_SIZE,
     ECC_LEVEL,
     ErrorMessages,
@@ -39,11 +37,21 @@ class QrGenerator:
         if box_size < 1:
             raise QrGenerationError(ErrorMessages.QR_TOO_LARGE.format(min_dim=min_dim))
 
-        qr.box_size = box_size
-        fill = COLOR_WHITE if opts.invert else COLOR_BLACK
-        back = COLOR_BLACK if opts.invert else COLOR_WHITE
-        img = qr.make_image(fill_color=fill, back_color=back)
-        rgb: Image.Image = img.convert("RGB")
-        if rgb.size != (min_dim, min_dim):
-            rgb = rgb.resize((min_dim, min_dim), Image.Resampling.NEAREST)
-        return rgb
+        matrix = qr.get_matrix()
+        side = len(matrix) * box_size
+        img = Image.new("RGBA", (side, side), opts.qr_background.rgba_tuple)
+        draw = ImageDraw.Draw(img)
+        fg = opts.qr_foreground.rgba_tuple
+        for row_idx, row in enumerate(matrix):
+            for col_idx, is_dark in enumerate(row):
+                if is_dark:
+                    x0 = col_idx * box_size
+                    y0 = row_idx * box_size
+                    draw.rectangle(
+                        (x0, y0, x0 + box_size - 1, y0 + box_size - 1),
+                        fill=fg,
+                    )
+
+        if img.size != (min_dim, min_dim):
+            img = img.resize((min_dim, min_dim), Image.Resampling.NEAREST)
+        return img

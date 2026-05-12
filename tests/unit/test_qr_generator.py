@@ -4,11 +4,15 @@ import qrcode
 from PIL import Image
 
 from app.core.qr_generator import QrGenerator
-from app.core.qr_options import QrOptions
+from app.core.qr_options import BLACK, WHITE, BackgroundColor, QrOptions
 
 
 def make_opts(
-    width: int = 96, height: int = 128, margin: int = 15, invert: bool = False
+    width: int = 96,
+    height: int = 128,
+    margin: int = 15,
+    qr_background: BackgroundColor = WHITE,
+    qr_foreground: BackgroundColor = BLACK,
 ) -> QrOptions:
     return QrOptions(
         url="https://nrl.li/leadmagnete",
@@ -16,7 +20,8 @@ def make_opts(
         height=height,
         margin_modules=margin,
         output_path=Path("out.png"),
-        invert=invert,
+        qr_background=qr_background,
+        qr_foreground=qr_foreground,
     )
 
 
@@ -50,14 +55,28 @@ def test_generate_uses_requested_border() -> None:
     assert qr.border == 15
 
 
-def test_generate_normal_has_white_border_pixel() -> None:
-    img = QrGenerator().generate(make_opts(invert=False))
-    assert img.getpixel((0, 0)) == (255, 255, 255)
+def test_generate_default_corner_is_white() -> None:
+    img = QrGenerator().generate(make_opts())
+    assert img.getpixel((0, 0)) == (255, 255, 255, 255)
 
 
-def test_generate_inverted_has_black_border_pixel() -> None:
-    img = QrGenerator().generate(make_opts(invert=True))
-    assert img.getpixel((0, 0)) == (0, 0, 0)
+def test_generate_transparent_qr_background_yields_transparent_corner() -> None:
+    img = QrGenerator().generate(make_opts(qr_background=BackgroundColor(0, 0, 0, 0)))
+    corner = img.getpixel((0, 0))
+    assert isinstance(corner, tuple)
+    assert corner[3] == 0
+
+
+def test_generate_red_foreground_renders_red_modules() -> None:
+    red = BackgroundColor(255, 0, 0, 255)
+    img = QrGenerator().generate(make_opts(qr_foreground=red))
+    # finder pattern at top-left has dark cell at center (~module 3,3)
+    found_red = any(
+        img.getpixel((x, y)) == (255, 0, 0, 255)
+        for x in range(img.size[0])
+        for y in range(img.size[1])
+    )
+    assert found_red
 
 
 def test_generate_encodes_url() -> None:

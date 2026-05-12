@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from app.core.qr_options import QrOptions
+from app.core.qr_options import BLACK, WHITE, BackgroundColor, QrOptions
 
 
 def make_options(**overrides: object) -> QrOptions:
@@ -33,11 +33,38 @@ def test_qr_options_is_frozen() -> None:
         opts.width = 200  # type: ignore[misc]
 
 
-def test_qr_options_invert_defaults_false() -> None:
+def test_qr_options_color_defaults() -> None:
     opts = make_options()
-    assert opts.invert is False
+    assert opts.canvas_background == WHITE
+    assert opts.qr_background == WHITE
+    assert opts.qr_foreground == BLACK
 
 
-def test_qr_options_invert_can_be_set() -> None:
-    opts = make_options(invert=True)
-    assert opts.invert is True
+def test_background_color_transparent_helper() -> None:
+    assert BackgroundColor(0, 0, 0, 0).is_transparent is True
+    assert BackgroundColor(0, 0, 0, 255).is_transparent is False
+
+
+def test_background_color_tuples() -> None:
+    c = BackgroundColor(10, 20, 30, 200)
+    assert c.rgb_tuple == (10, 20, 30)
+    assert c.rgba_tuple == (10, 20, 30, 200)
+
+
+def test_needs_alpha_false_for_all_opaque() -> None:
+    assert make_options().needs_alpha is False
+
+
+def test_needs_alpha_true_when_canvas_transparent() -> None:
+    opts = make_options(canvas_background=BackgroundColor(0, 0, 0, 0))
+    assert opts.needs_alpha is True
+
+
+def test_needs_alpha_true_when_qr_background_transparent() -> None:
+    opts = make_options(qr_background=BackgroundColor(0, 0, 0, 0))
+    assert opts.needs_alpha is True
+
+
+def test_needs_alpha_true_when_qr_foreground_transparent() -> None:
+    opts = make_options(qr_foreground=BackgroundColor(0, 0, 0, 0))
+    assert opts.needs_alpha is True

@@ -8,6 +8,9 @@ DEFAULT_BOX_SIZE = 1
 COLOR_BLACK = "black"
 COLOR_WHITE = "white"
 
+TRANSPARENT_KEYWORD = "transparent"
+HEX_COLOR_PATTERN = r"^#?[0-9A-Fa-f]{6}$"
+
 
 class ErrorMessages:
     URL_EMPTY = "URL must not be empty."
@@ -19,6 +22,10 @@ class ErrorMessages:
     QR_TOO_LARGE = (
         "Requested margin and content do not fit within "
         "min(width, height)={min_dim}px. Increase canvas or shorten URL."
+    )
+    COLOR_INVALID = (
+        "Color value '{value}' for {flag} must be 'transparent' or hex RRGGBB "
+        "(optionally prefixed with '#')."
     )
 
 

@@ -1,9 +1,16 @@
 from app.cli.arg_parser import ArgValidationError, parse_args
-from app.config.constants import COLOR_BLACK, COLOR_WHITE, ExitCodes
+from app.config.constants import ExitCodes
 from app.config.settings import Settings
 from app.core.canvas_composer import CanvasComposer
 from app.core.qr_generator import QrGenerationError, QrGenerator
+from app.core.qr_options import BackgroundColor
 from app.logging_config import configure_logging, get_logger
+
+
+def _describe(color: BackgroundColor) -> str:
+    if color.is_transparent:
+        return "transparent"
+    return f"#{color.r:02X}{color.g:02X}{color.b:02X}"
 
 
 def run(argv: list[str]) -> int:
@@ -21,8 +28,13 @@ def run(argv: list[str]) -> int:
 
     try:
         qr_image = QrGenerator().generate(opts)
-        background = COLOR_BLACK if opts.invert else COLOR_WHITE
-        canvas = CanvasComposer().compose(qr_image, opts.width, opts.height, background=background)
+        canvas = CanvasComposer().compose(
+            qr_image,
+            opts.width,
+            opts.height,
+            background=opts.canvas_background,
+            keep_alpha=opts.needs_alpha,
+        )
         canvas.save(opts.output_path, format="PNG")
     except QrGenerationError as exc:
         logger.error("QR generation failed: %s", exc)
@@ -35,11 +47,13 @@ def run(argv: list[str]) -> int:
         return ExitCodes.UNKNOWN
 
     logger.info(
-        "Wrote %s (%dx%d, ECC=H, margin=%d modules, invert=%s)",
+        "Wrote %s (%dx%d, ECC=H, margin=%d modules, canvas_bg=%s, qr_bg=%s, qr_fg=%s)",
         opts.output_path,
         opts.width,
         opts.height,
         opts.margin_modules,
-        opts.invert,
+        _describe(opts.canvas_background),
+        _describe(opts.qr_background),
+        _describe(opts.qr_foreground),
     )
     return ExitCodes.OK
