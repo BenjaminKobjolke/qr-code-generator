@@ -9,3 +9,4 @@ class QrOptions:
     height: int
     margin_modules: int
     output_path: Path
+    invert: bool = False

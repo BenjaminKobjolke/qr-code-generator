@@ -29,6 +29,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Output PNG path (must end in .png).",
     )
+    parser.add_argument(
+        "--invert",
+        action="store_true",
+        help="Inverse colors (white QR on black canvas).",
+    )
     return parser
 
 
@@ -60,4 +65,5 @@ def parse_args(argv: list[str]) -> QrOptions:
         height=ns.height,
         margin_modules=ns.margin,
         output_path=output_path,
+        invert=bool(ns.invert),
     )

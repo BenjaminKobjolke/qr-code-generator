@@ -31,3 +31,13 @@ def test_qr_options_is_frozen() -> None:
     opts = make_options()
     with pytest.raises(dataclasses.FrozenInstanceError):
         opts.width = 200  # type: ignore[misc]
+
+
+def test_qr_options_invert_defaults_false() -> None:
+    opts = make_options()
+    assert opts.invert is False
+
+
+def test_qr_options_invert_can_be_set() -> None:
+    opts = make_options(invert=True)
+    assert opts.invert is True

@@ -27,6 +27,12 @@ def test_parse_valid_args_returns_qr_options() -> None:
     assert opts.height == 128
     assert opts.margin_modules == 15
     assert opts.output_path == Path("out.png")
+    assert opts.invert is False
+
+
+def test_invert_flag_sets_option() -> None:
+    opts = parse_args([*VALID_ARGS, "--invert"])
+    assert opts.invert is True
 
 
 def test_missing_required_arg_exits() -> None:

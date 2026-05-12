@@ -1,5 +1,5 @@
 from app.cli.arg_parser import ArgValidationError, parse_args
-from app.config.constants import ExitCodes
+from app.config.constants import COLOR_BLACK, COLOR_WHITE, ExitCodes
 from app.config.settings import Settings
 from app.core.canvas_composer import CanvasComposer
 from app.core.qr_generator import QrGenerationError, QrGenerator
@@ -21,7 +21,8 @@ def run(argv: list[str]) -> int:
 
     try:
         qr_image = QrGenerator().generate(opts)
-        canvas = CanvasComposer().compose(qr_image, opts.width, opts.height)
+        background = COLOR_BLACK if opts.invert else COLOR_WHITE
+        canvas = CanvasComposer().compose(qr_image, opts.width, opts.height, background=background)
         canvas.save(opts.output_path, format="PNG")
     except QrGenerationError as exc:
         logger.error("QR generation failed: %s", exc)
@@ -34,10 +35,11 @@ def run(argv: list[str]) -> int:
         return ExitCodes.UNKNOWN
 
     logger.info(
-        "Wrote %s (%dx%d, ECC=H, margin=%d modules)",
+        "Wrote %s (%dx%d, ECC=H, margin=%d modules, invert=%s)",
         opts.output_path,
         opts.width,
         opts.height,
         opts.margin_modules,
+        opts.invert,
     )
     return ExitCodes.OK

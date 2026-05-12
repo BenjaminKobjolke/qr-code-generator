@@ -7,13 +7,16 @@ from app.core.qr_generator import QrGenerator
 from app.core.qr_options import QrOptions
 
 
-def make_opts(width: int = 96, height: int = 128, margin: int = 15) -> QrOptions:
+def make_opts(
+    width: int = 96, height: int = 128, margin: int = 15, invert: bool = False
+) -> QrOptions:
     return QrOptions(
         url="https://nrl.li/leadmagnete",
         width=width,
         height=height,
         margin_modules=margin,
         output_path=Path("out.png"),
+        invert=invert,
     )
 
 
@@ -45,6 +48,16 @@ def test_generate_uses_requested_border() -> None:
     gen = QrGenerator()
     qr = gen.build_qr(make_opts(margin=15))
     assert qr.border == 15
+
+
+def test_generate_normal_has_white_border_pixel() -> None:
+    img = QrGenerator().generate(make_opts(invert=False))
+    assert img.getpixel((0, 0)) == (255, 255, 255)
+
+
+def test_generate_inverted_has_black_border_pixel() -> None:
+    img = QrGenerator().generate(make_opts(invert=True))
+    assert img.getpixel((0, 0)) == (0, 0, 0)
 
 
 def test_generate_encodes_url() -> None:

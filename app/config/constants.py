@@ -5,6 +5,9 @@ ECC_LEVEL = qrcode.constants.ERROR_CORRECT_H
 PNG_EXTENSION = ".png"
 DEFAULT_BOX_SIZE = 1
 
+COLOR_BLACK = "black"
+COLOR_WHITE = "white"
+
 
 class ErrorMessages:
     URL_EMPTY = "URL must not be empty."

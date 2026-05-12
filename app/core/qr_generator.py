@@ -1,7 +1,13 @@
 import qrcode
 from PIL import Image
 
-from app.config.constants import DEFAULT_BOX_SIZE, ECC_LEVEL, ErrorMessages
+from app.config.constants import (
+    COLOR_BLACK,
+    COLOR_WHITE,
+    DEFAULT_BOX_SIZE,
+    ECC_LEVEL,
+    ErrorMessages,
+)
 from app.core.qr_options import QrOptions
 
 
@@ -34,7 +40,9 @@ class QrGenerator:
             raise QrGenerationError(ErrorMessages.QR_TOO_LARGE.format(min_dim=min_dim))
 
         qr.box_size = box_size
-        img = qr.make_image(fill_color="black", back_color="white")
+        fill = COLOR_WHITE if opts.invert else COLOR_BLACK
+        back = COLOR_BLACK if opts.invert else COLOR_WHITE
+        img = qr.make_image(fill_color=fill, back_color=back)
         rgb: Image.Image = img.convert("RGB")
         if rgb.size != (min_dim, min_dim):
             rgb = rgb.resize((min_dim, min_dim), Image.Resampling.NEAREST)

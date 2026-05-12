@@ -2,8 +2,10 @@ from PIL import Image
 
 
 class CanvasComposer:
-    def compose(self, qr_image: Image.Image, width: int, height: int) -> Image.Image:
-        canvas = Image.new("RGB", (width, height), "white")
+    def compose(
+        self, qr_image: Image.Image, width: int, height: int, *, background: str
+    ) -> Image.Image:
+        canvas = Image.new("RGB", (width, height), background)
         qr_w, qr_h = qr_image.size
 
         if qr_w > width or qr_h > height:
