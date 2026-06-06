@@ -14,6 +14,7 @@ sample.png
 .env
 .env.*
 !.env.example
+config.ini
 claude-plans
 .venv
 .ruff_cache

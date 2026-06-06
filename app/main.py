@@ -3,7 +3,7 @@ from app.config.constants import ExitCodes
 from app.config.settings import Settings
 from app.core.canvas_composer import CanvasComposer
 from app.core.qr_generator import QrGenerationError, QrGenerator
-from app.core.qr_options import BackgroundColor
+from app.core.qr_options import BackgroundColor, QrOptions
 from app.logging_config import configure_logging, get_logger
 
 
@@ -13,19 +13,9 @@ def _describe(color: BackgroundColor) -> str:
     return f"#{color.r:02X}{color.g:02X}{color.b:02X}"
 
 
-def run(argv: list[str]) -> int:
-    settings = Settings.from_env()
-    configure_logging(debug=settings.debug)
+def render(opts: QrOptions) -> int:
+    """Generate, compose and save a QR for the given options. Shared by all entry points."""
     logger = get_logger("qr-create")
-
-    try:
-        opts = parse_args(argv)
-    except ArgValidationError as exc:
-        logger.error("Invalid arguments: %s", exc)
-        return ExitCodes.INVALID_ARGS
-    except SystemExit as exc:
-        return int(exc.code) if isinstance(exc.code, int) else ExitCodes.INVALID_ARGS
-
     try:
         qr_image = QrGenerator().generate(opts)
         canvas = CanvasComposer().compose(
@@ -57,3 +47,19 @@ def run(argv: list[str]) -> int:
         _describe(opts.qr_foreground),
     )
     return ExitCodes.OK
+
+
+def run(argv: list[str]) -> int:
+    settings = Settings.from_env()
+    configure_logging(debug=settings.debug)
+    logger = get_logger("qr-create")
+
+    try:
+        opts = parse_args(argv)
+    except ArgValidationError as exc:
+        logger.error("Invalid arguments: %s", exc)
+        return ExitCodes.INVALID_ARGS
+    except SystemExit as exc:
+        return int(exc.code) if isinstance(exc.code, int) else ExitCodes.INVALID_ARGS
+
+    return render(opts)

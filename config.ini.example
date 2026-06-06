@@ -1,0 +1,7 @@
+[output]
+directory = E:\[--Sync--]\Working\qr-codes
+
+[canvas]
+width = 2048
+height = 2048
+margin = 2
